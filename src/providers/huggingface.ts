@@ -209,28 +209,30 @@ export class HuggingFaceProvider extends BaseProvider {
   ): Promise<ChatCompletionResponse> {
     const prompt = this.formatMessagesAsPrompt(messages);
     
-    const request: HuggingFaceRequest = {
-      inputs: prompt,
-      parameters: {
-        return_full_text: false,
-        do_sample: true,
-      },
+    const parameters: NonNullable<HuggingFaceRequest['parameters']> = {
+      return_full_text: false,
+      do_sample: true,
     };
 
     if (options.maxTokens !== undefined) {
-      request.parameters!.max_new_tokens = options.maxTokens;
+      parameters.max_new_tokens = options.maxTokens;
     }
     if (options.temperature !== undefined) {
-      request.parameters!.temperature = options.temperature;
+      parameters.temperature = options.temperature;
     }
     if (options.topP !== undefined) {
-      request.parameters!.top_p = options.topP;
+      parameters.top_p = options.topP;
     }
     if (options.stop !== undefined) {
-      request.parameters!.stop_sequences = Array.isArray(options.stop)
+      parameters.stop_sequences = Array.isArray(options.stop)
         ? options.stop
         : [options.stop];
     }
+
+    const request: HuggingFaceRequest = {
+      inputs: prompt,
+      parameters,
+    };
 
     const response = await this.fetchJson<HuggingFaceResponse[] | HuggingFaceResponse>(
       `${this.baseUrl}/models/${model}`,
@@ -333,29 +335,31 @@ export class HuggingFaceProvider extends BaseProvider {
   ): AsyncIterable<ChatCompletionChunk> {
     const prompt = this.formatMessagesAsPrompt(messages);
 
-    const request: HuggingFaceRequest = {
-      inputs: prompt,
-      parameters: {
-        return_full_text: false,
-        do_sample: true,
-      },
-      stream: true,
+    const parameters: NonNullable<HuggingFaceRequest['parameters']> = {
+      return_full_text: false,
+      do_sample: true,
     };
 
     if (options.maxTokens !== undefined) {
-      request.parameters!.max_new_tokens = options.maxTokens;
+      parameters.max_new_tokens = options.maxTokens;
     }
     if (options.temperature !== undefined) {
-      request.parameters!.temperature = options.temperature;
+      parameters.temperature = options.temperature;
     }
     if (options.topP !== undefined) {
-      request.parameters!.top_p = options.topP;
+      parameters.top_p = options.topP;
     }
     if (options.stop !== undefined) {
-      request.parameters!.stop_sequences = Array.isArray(options.stop)
+      parameters.stop_sequences = Array.isArray(options.stop)
         ? options.stop
         : [options.stop];
     }
+
+    const request: HuggingFaceRequest = {
+      inputs: prompt,
+      parameters,
+      stream: true,
+    };
 
     const response = await fetch(`${this.baseUrl}/models/${model}`, {
       method: 'POST',
