@@ -1,0 +1,24 @@
+{
+  "name": "ai-suite",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Production-ready Multi-Provider AI Platform (December 2025)",
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB -c cyan,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "clean": "rimraf backend/dist frontend/dist node_modules backend/node_modules frontend/node_modules"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "rimraf": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
