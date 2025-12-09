@@ -3,6 +3,9 @@
 // December 2025 - Production Ready
 // ============================================
 
+// Use backend URL from env or default to relative path (for dev proxy)
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export type Provider = 'openrouter' | 'huggingface' | 'featherless' | 'venice' | 'together';
 
 // ============================================
@@ -123,19 +126,19 @@ export interface HealthResponse {
 // ============================================
 
 export async function getHealth(): Promise<HealthResponse> {
-  const res = await fetch('/api/health');
+  const res = await fetch(`${API_BASE}/api/health`);
   if (!res.ok) throw new Error('Health check failed');
   return res.json();
 }
 
 export async function getProviders(): Promise<{ providers: ProviderInfo[] }> {
-  const res = await fetch('/api/providers');
+  const res = await fetch(`${API_BASE}/api/providers`);
   if (!res.ok) throw new Error('Failed to fetch providers');
   return res.json();
 }
 
 export async function getModels(provider: Provider): Promise<{ data: Model[]; cached: boolean }> {
-  const res = await fetch(`/api/${provider}/models`);
+  const res = await fetch(`${API_BASE}/api/${provider}/models`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || `Failed to fetch models: ${res.status}`);
@@ -148,7 +151,7 @@ export async function getModels(provider: Provider): Promise<{ data: Model[]; ca
 // ============================================
 
 export async function chat(provider: Provider, request: ChatRequest): Promise<ChatResponse> {
-  const res = await fetch(`/api/${provider}/chat/completions`, {
+  const res = await fetch(`${API_BASE}/api/${provider}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...request, stream: false }),
@@ -165,7 +168,7 @@ export async function* chatStream(
   provider: Provider,
   request: ChatRequest
 ): AsyncGenerator<string, void, unknown> {
-  const res = await fetch(`/api/${provider}/chat/completions`, {
+  const res = await fetch(`${API_BASE}/api/${provider}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...request, stream: true }),
@@ -215,7 +218,7 @@ export async function chatWithFailover(
   messages: Message[],
   options?: Omit<ChatRequest, 'model' | 'messages'>
 ): Promise<ChatResponse> {
-  const res = await fetch('/api/failover/chat/completions', {
+  const res = await fetch(`${API_BASE}/api/failover/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ modelClass, messages, ...options }),
@@ -280,7 +283,7 @@ export interface ImageGenRequest {
 }
 
 export async function generateImage(provider: Provider, request: ImageGenRequest) {
-  const res = await fetch(`/api/${provider}/images/generations`, {
+  const res = await fetch(`${API_BASE}/api/${provider}/images/generations`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
@@ -304,7 +307,7 @@ export interface VeniceCharacter {
 }
 
 export async function getVeniceCharacters(): Promise<{ data: VeniceCharacter[] }> {
-  const res = await fetch('/api/venice/characters');
+  const res = await fetch(`${API_BASE}/api/venice/characters`);
   if (!res.ok) throw new Error('Failed to fetch characters');
   return res.json();
 }
@@ -319,7 +322,7 @@ export async function chatViaHuggingFaceFeatherless(
   messages: Message[],
   options?: Omit<ChatRequest, 'model' | 'messages'>
 ): Promise<ChatResponse> {
-  const res = await fetch('/api/huggingface/featherless/chat/completions', {
+  const res = await fetch(`${API_BASE}/api/huggingface/featherless/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model, messages, ...options, stream: false }),
@@ -337,7 +340,7 @@ export async function* chatStreamViaHuggingFaceFeatherless(
   messages: Message[],
   options?: Omit<ChatRequest, 'model' | 'messages' | 'stream'>
 ): AsyncGenerator<string, void, unknown> {
-  const res = await fetch('/api/huggingface/featherless/chat/completions', {
+  const res = await fetch(`${API_BASE}/api/huggingface/featherless/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model, messages, ...options, stream: true }),
@@ -386,7 +389,7 @@ export async function createEmbeddings(
   input: string | string[],
   model: string
 ): Promise<{ data: Array<{ embedding: number[]; index: number }> }> {
-  const res = await fetch(`/api/${provider}/embeddings`, {
+  const res = await fetch(`${API_BASE}/api/${provider}/embeddings`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ input, model }),
